@@ -13,13 +13,6 @@
 #include "bus_test_interfaces.h"
 #include "bus_zmq.h"
 
-void print_char_buf(const char *buf, size_t size) {
-	int i;
-	for (i = 0; i < size; i++)
-		printf("%c", buf[i]);
-	printf("\n");
-}
-
 enum call_type call_type_enum;
 
 struct bus_socket_interface_t log_zmq_interface = {
@@ -209,7 +202,7 @@ int i_log_zmq_check_get_fd(void* _log_zmq_object, int* _fd)
 	struct log_zmq_object_t* log_zmq_object = (struct log_zmq_object_t*)_log_zmq_object;
 	printf("ZMQ check get fd in [%d]\n", log_zmq_object->level);
 	BUS_CHECK(log_zmq_object->interface.get_event_fd(log_zmq_object->This, _fd), "Cannot get fd");
-	
+
 	return STATUS_OK;
 
 error:
@@ -308,10 +301,10 @@ BUS_STATUS check_object_init(struct msg_seq_item_t *msg_seq, int msg_seq_size, i
 	memset(t, 0, sizeof(struct check_correct_object_t));
 
 	printf("Check object init\n");
-	
+
 	enum call_type* call_log = (enum call_type*)malloc(log_size * sizeof(enum call_type));
 	memset(call_log, 0, log_size * sizeof(enum call_type));
-	
+
 	struct msg_seq_item_t* seq = (struct msg_seq_item_t*)malloc(msg_seq_size * sizeof(struct msg_seq_item_t));
 	int i;
 	for (i = 0; i < msg_seq_size; i++) {
@@ -426,10 +419,10 @@ BUS_STATUS check_msg_send(void* _object, void* message, size_t message_size, int
 		print_char_buf((const char*)object->msg_seq[object->msg_pos].msg, object->msg_seq[object->msg_pos].msg_size);
 		printf("sended message=");
 		print_char_buf(message, message_size);
-		RM_FAIL("check_msg_send: Wrong message");	
+		RM_FAIL("check_msg_send: Wrong message");
 	}
 	object->msg_pos++;
-	
+
 	return STATUS_OK;
 
 error:
@@ -448,11 +441,11 @@ BUS_STATUS check_msg_recv(void* _object, void** message, size_t* size)
 		RM_FAIL("check_msg_recv: msg seq size limit");
 
 	object->call_log[object->log_pos++] = RECV;
-		
+
 	size_t _size = object->msg_seq[object->msg_pos].msg_size;
-	char *_message = (char *)malloc(_size*sizeof(char));
+	char *_message = (char *)malloc(_size * sizeof(char));
 	memcpy(_message, object->msg_seq[object->msg_pos].msg, _size);
-	
+
 	object->msg_pos++;
 
 	*message = _message;
@@ -468,7 +461,7 @@ BUS_STATUS check_pollinit(void* _object)
 {
 	struct check_correct_object_t* object = (struct check_correct_object_t*)_object;
 	printf("check pollinit\n");
-	
+
 	if (object->log_pos >= object->log_size)
 		RM_FAIL("check_pollinit: Log size limit");
 	object->call_log[object->log_pos++] = POLLINIT;
@@ -484,7 +477,7 @@ BUS_STATUS check_poll(void* _object)
 {
 	struct check_correct_object_t* object = (struct check_correct_object_t*)_object;
 	printf("check poll\n");
-	
+
 	if (object->log_pos >= object->log_size)
 		RM_FAIL("check_poll: Log size limit");
 	object->call_log[object->log_pos++] = POLL;
@@ -500,11 +493,11 @@ int check_check_polling_in(void* _object)
 {
 	struct check_correct_object_t* object = (struct check_correct_object_t*)_object;
 	printf("check check polling in\n");
-	
+
 	if (object->log_pos >= object->log_size)
 		RM_FAIL("check_check_polling_in: Log size limit");
 	object->call_log[object->log_pos++] = CHECK_POLL_IN;
-	
+
 	return 1;
 
 error:
@@ -516,11 +509,11 @@ int check_check_sock_polling_in(void* _object)
 {
 	struct check_correct_object_t* object = (struct check_correct_object_t*)_object;
 	printf("check check sock polling in\n");
-	
+
 	if (object->log_pos >= object->log_size)
 		RM_FAIL("check_check_polling_in: Log size limit");
 	object->call_log[object->log_pos++] = CHECK_SOCK_POLL_IN;
-	
+
 	return 1;
 
 error:
@@ -532,15 +525,15 @@ BUS_STATUS check_get_fd(void* _object, int* _fd)
 {
 	struct check_correct_object_t* object = (struct check_correct_object_t*)_object;
 	printf("check getting fd\n");
-	
+
 	if (object->log_pos >= object->log_size)
 		RM_FAIL("check_get_fd: Log size limit");
 	object->call_log[object->log_pos++] = GET_FD;
 
- 	*_fd = 0;
+	*_fd = 0;
 	return STATUS_OK;
 
 error:
- 	*_fd = -1;
+	*_fd = -1;
 	return STATUS_ERR;
 }

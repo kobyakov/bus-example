@@ -27,16 +27,16 @@ BUS_STATUS send_register_messages(struct bus_t* bus, const char* id)
 	void *error_message = NULL;
 	size_t error_size = 0;
 	switch (status_message_type) {
-		case OK_MESSAGE:
-			break;
-		case ERROR_MESSAGE:
-			BUS_CHECK(recv_message(bus, &error_message, &error_size), "send_register_messages: Cannot get error message");
-			bus_log(LOG_ERR, "%.*s", error_size, (const char*)error_message);
-			BUS_FAIL("Cannot register to bus");
-			break;
-		default:
-			BUS_FAIL("send_register_messages: Wrong status message type");
-			break;
+	case OK_MESSAGE:
+		break;
+	case ERROR_MESSAGE:
+		BUS_CHECK(recv_message(bus, &error_message, &error_size), "send_register_messages: Cannot get error message");
+		bus_log(LOG_ERR, "%.*s", error_size, (const char*)error_message);
+		BUS_FAIL("Cannot register to bus");
+		break;
+	default:
+		BUS_FAIL("send_register_messages: Wrong status message type");
+		break;
 	}
 
 	return STATUS_OK;
@@ -61,14 +61,14 @@ BUS_STATUS send_reply(struct bus_t* bus, void* envelope_message, size_t envelope
 	BUS_CHECK(recv_status(bus, &status_message_type), "Cannot receive status message");
 
 	switch (status_message_type) {
-		case OK_MESSAGE:
-			break;
-		case ERROR_MESSAGE:
-			BUS_CHECK(recv_message(bus, &error_message, &error_size), "Cannot get error message");
-			bus_log(LOG_ERR, "%.*s", error_size, (const char*) error_message);
-			break;
-		default:
-			BUS_FAIL("Wrong status message");
+	case OK_MESSAGE:
+		break;
+	case ERROR_MESSAGE:
+		BUS_CHECK(recv_message(bus, &error_message, &error_size), "Cannot get error message");
+		bus_log(LOG_ERR, "%.*s", error_size, (const char*) error_message);
+		break;
+	default:
+		BUS_FAIL("Wrong status message");
 	}
 	if (error_message)
 		free(error_message);
@@ -84,19 +84,19 @@ error:
 enum bus_status_message_type get_status_message_type(char* status)
 {
 	switch (*status) {
-		case MSG_BUS_OK:
-			return OK_MESSAGE;	
+	case MSG_BUS_OK:
+				return OK_MESSAGE;
 		case MSG_BUS_ERROR:
 			return ERROR_MESSAGE;
 		case MSG_BUS_REPLY:
 			return REPLY_MESSAGE;
 		default:
 			return UNDEF_MESSAGE;
+		}
 	}
-}
 
 
-BUS_STATUS recv_status(struct bus_t* bus, enum bus_status_message_type* status_type)
+	BUS_STATUS recv_status(struct bus_t* bus, enum bus_status_message_type* status_type)
 {
 	BUS_NULL_POINTER_CHECK(bus);
 	void* status_message;
@@ -172,7 +172,7 @@ BUS_STATUS recv_message(struct bus_t* bus, void** data, size_t* data_size)
 
 	*data = buffer;
 	*data_size = size;
-	
+
 	return STATUS_OK;
 
 error:
@@ -185,7 +185,7 @@ error:
 BUS_STATUS bus_pollinit(struct bus_t* bus) {
 	BUS_NULL_POINTER_CHECK(bus);
 	BUS_CHECK(bus->interface.pollinit(bus->interface.This), "Cannot pollinit");
-	
+
 	return STATUS_OK;
 
 error:
@@ -196,7 +196,7 @@ error:
 BUS_STATUS bus_poll(struct bus_t* bus) {
 	BUS_NULL_POINTER_CHECK(bus);
 	BUS_CHECK(bus->interface.poll(bus->interface.This), "Cannot poll");
-	
+
 	return STATUS_OK;
 
 error:
@@ -222,7 +222,7 @@ int bus_check_sock_poll_in(struct bus_t* bus) {
 BUS_STATUS bus_get_event_fd(struct bus_t* bus, int *fd) {
 	BUS_NULL_POINTER_CHECK(bus);
 	BUS_CHECK(bus->interface.get_event_fd(bus->interface.This, fd), "Cannot get fd");
-	
+
 	return STATUS_OK;
 
 error:
@@ -245,16 +245,16 @@ BUS_STATUS bus_init(enum bus_type type, struct bus_t** bus)
 	bus_->options = opts;
 	bus_->type = type;
 	switch (type) {
-		case BUS_CLIENT:
-			BUS_CHECK(socket_connect(bus_, broker_router_url), "Cannot connect REQ");
-			break;
+	case BUS_CLIENT:
+		BUS_CHECK(socket_connect(bus_, broker_router_url), "Cannot connect REQ");
+		break;
 
-		case BUS_SERVER:
-			BUS_CHECK(socket_connect(bus_, broker_router_url), "Cannot connect REQ");
-			break;
+	case BUS_SERVER:
+		BUS_CHECK(socket_connect(bus_, broker_router_url), "Cannot connect REQ");
+		break;
 
-		default:
-			BUS_FAIL("Unknown bus type");
+	default:
+		BUS_FAIL("Unknown bus type");
 	}
 	*bus = bus_;
 	return STATUS_OK;
@@ -274,15 +274,15 @@ BUS_STATUS bus_done(struct bus_t* bus)
 	if (!bus)
 		return STATUS_OK;
 	switch (bus->type) {
-		case BUS_CLIENT:
-			BUS_CHECK(socket_close(bus), "Cannot close REQ");
-			break;
-		case BUS_SERVER:
-			BUS_CHECK(socket_close(bus), "Cannot close REQ");
-			BUS_CHECK(socket_close(bus), "Cannot close SUB");
-			break;
-		default:
-			BUS_FAIL("Unknown bus type");
+	case BUS_CLIENT:
+		BUS_CHECK(socket_close(bus), "Cannot close REQ");
+		break;
+	case BUS_SERVER:
+		BUS_CHECK(socket_close(bus), "Cannot close REQ");
+		BUS_CHECK(socket_close(bus), "Cannot close SUB");
+		break;
+	default:
+		BUS_FAIL("Unknown bus type");
 	}
 
 	if (bus->interface.This)

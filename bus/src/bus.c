@@ -47,7 +47,7 @@ BUS_STATUS bus_client_init(struct bus_client_t** bus)
 	if (!bus_) BUS_FAIL("Cannot allocate memory for bus");
 	BUS_CHECK(bus_init(BUS_CLIENT, &bus_->base_bus), "Cannot init bus");
 	*bus = bus_;
-	
+
 	return STATUS_OK;
 
 error:
@@ -62,7 +62,7 @@ BUS_STATUS bus_client_done(struct bus_client_t* bus)
 	BUS_NULL_POINTER_CHECK(bus);
 	BUS_CHECK(bus_done(bus->base_bus), "Cannot done base bus");
 	free(bus);
-	
+
 	return STATUS_OK;
 
 error:
@@ -87,9 +87,9 @@ error:
 }
 
 
-BUS_STATUS request(const struct bus_client_t* bus, const char* address, 
-	               const void* request, size_t req_size, 
-	               void** reply, size_t* rep_size) 
+BUS_STATUS request(const struct bus_client_t* bus, const char* address,
+                   const void* request, size_t req_size,
+                   void** reply, size_t* rep_size)
 {
 	BUS_NULL_POINTER_CHECK(bus);
 	void* reply_message = NULL;
@@ -109,24 +109,24 @@ BUS_STATUS request(const struct bus_client_t* bus, const char* address,
 		BUS_FAIL("Wrong status message");
 
 	switch (status_message_type) {
-		case REPLY_MESSAGE:
-			BUS_CHECK(recv_message(bus->base_bus, &reply_message, &reply_size), "Cannot receive reply message");
-			// Если пришло пустое сообщение - ошибка обработчика
-			if (!reply_message)
-				BUS_FAIL("Error handling request");
-			break;
-		case ERROR_MESSAGE:
-			BUS_CHECK(recv_message(bus->base_bus, &error_message, &error_size), "Cannot get error message");
-			bus_log(LOG_ERR, "%.*s", error_size, (const char*)error_message);
-			BUS_FAIL("Send request error");
-			break;
-		default:
-			BUS_FAIL("send_request: Wrong status message type");
-			break;
+	case REPLY_MESSAGE:
+		BUS_CHECK(recv_message(bus->base_bus, &reply_message, &reply_size), "Cannot receive reply message");
+		// Если пришло пустое сообщение - ошибка обработчика
+		if (!reply_message)
+			BUS_FAIL("Error handling request");
+		break;
+	case ERROR_MESSAGE:
+		BUS_CHECK(recv_message(bus->base_bus, &error_message, &error_size), "Cannot get error message");
+		bus_log(LOG_ERR, "%.*s", error_size, (const char*)error_message);
+		BUS_FAIL("Send request error");
+		break;
+	default:
+		BUS_FAIL("send_request: Wrong status message type");
+		break;
 	}
 	if (error_message)
 		free(error_message);
-	
+
 	*reply = reply_message;
 	*rep_size = reply_size;
 	return STATUS_OK;
@@ -148,7 +148,7 @@ BUS_STATUS bus_server_init(struct bus_server_t** bus)
 	if (!bus_) BUS_FAIL("Cannot allocate memory for bus");
 	BUS_CHECK(bus_init(BUS_SERVER, &bus_->base_bus), "Cannot init bus");
 	*bus = bus_;
-	
+
 	return STATUS_OK;
 
 error:
@@ -165,7 +165,7 @@ BUS_STATUS bus_server_done(struct bus_server_t* bus)
 	BUS_CHECK(bus->base_bus != NULL, "base bus NULL");
 	BUS_CHECK(bus_done(bus->base_bus), "Cannot done base bus");
 	free(bus);
-	
+
 	return STATUS_OK;
 
 error:
@@ -179,7 +179,7 @@ BUS_STATUS register_server(struct bus_server_t* bus, const char* address, bus_ha
 	BUS_CHECK(send_register_messages(bus->base_bus, address), "Cannot send register client message");
 	bus->base_bus->address = address;
 	bus->handler = handler;
-	
+
 	return STATUS_OK;
 
 error:
@@ -199,18 +199,18 @@ static BUS_STATUS bus_message_handle(const struct bus_server_t* bus, int *schedu
 	char   *topic         = NULL;
 
 	BUS_STATUS handler_result = STATUS_ERR;
-   	BUS_CHECK(recv_message(bus->base_bus, &envelope_data, &envelope_size), "Cannot receive envelope data");
+	BUS_CHECK(recv_message(bus->base_bus, &envelope_data, &envelope_size), "Cannot receive envelope data");
 	BUS_CHECK(recv_message(bus->base_bus, &request_data, &request_size), "Cannot receive request data");
 	handler_result = bus->handler(request_data, request_size, &response_data, &response_size);
 	BUS_CHECK(send_reply(bus->base_bus, envelope_data, envelope_size, response_data, response_size), "Cannot send reply");
-    BUS_CHECK(handler_result, "Cannot handle request");
+	BUS_CHECK(handler_result, "Cannot handle request");
 
 	if ( topic         ) { free(topic);         }
 	if ( envelope_data ) { free(envelope_data); }
 	if ( request_data  ) { free(request_data);  }
 	if ( response_data ) { free(response_data); }
 
-  	*scheduled_exit = ( STATUS_FALSE == handler_result ) ? TRUE : FALSE;
+	*scheduled_exit = ( STATUS_FALSE == handler_result ) ? TRUE : FALSE;
 	return STATUS_OK;
 
 error:
@@ -219,7 +219,7 @@ error:
 	if ( request_data  ) { free(request_data);  }
 	if ( response_data ) { free(response_data); }
 
-  	*scheduled_exit  = FALSE; 
+	*scheduled_exit  = FALSE;
 	return STATUS_ERR;
 }
 
@@ -227,7 +227,7 @@ error:
 BUS_STATUS loop(const struct bus_server_t* bus)
 {
 	BUS_NULL_POINTER_CHECK(bus);
-  	int scheduled_exit = FALSE;
+	int scheduled_exit = FALSE;
 
 	BUS_CHECK(bus_pollinit(bus->base_bus), "Cannot initialization bus polling");
 
@@ -235,8 +235,8 @@ BUS_STATUS loop(const struct bus_server_t* bus)
 		BUS_CHECK(bus_poll(bus->base_bus), "Cannot bus polling");
 
 		if ( bus_check_poll_in(bus->base_bus) ) {
-		  BUS_CHECK(bus_message_handle(bus, &scheduled_exit), "Cannot handle receive message");
-      if ( scheduled_exit ) {	break; }
+			BUS_CHECK(bus_message_handle(bus, &scheduled_exit), "Cannot handle receive message");
+			if ( scheduled_exit ) {	break; }
 		}
 	}
 

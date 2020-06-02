@@ -7,7 +7,7 @@
 #include <string.h>
 #include <errno.h>
 
-#define BUS_STATUS int 
+#define BUS_STATUS int
 #define STATUS_OK 0
 #define STATUS_FALSE 1
 #define STATUS_ERR -1
